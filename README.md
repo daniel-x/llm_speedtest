@@ -20,8 +20,8 @@ appends one CSV row per prompt. A second script plots the results over time.
 Run a measurement:
 
 ```sh
-./claude_code_speed_test.py
-./claude_code_speed_test.py --model claude-sonnet-5-5
+./llm_speedtest.py
+./llm_speedtest.py --model claude-sonnet-5-5
 ```
 
 The script runs the prompts `brinks_story` (a story of about 1000 words) and `quotes_guide` (a
