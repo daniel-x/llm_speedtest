@@ -10,6 +10,7 @@ except for US office hours, which are white. This script takes US office hours a
 """
 
 import csv
+import re
 from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -87,20 +88,32 @@ def fit_ylim_below_legend(ax, data_max):
     ax.set_ylim(bottom=0, top=data_max * axes_box.height / usable_px)
 
 
+def short_model_name(model_id):
+    """Returns the family and version of a Claude model ID, e.g. "Opus 5.5" for "claude-opus-5-5".
+    Other IDs are returned unchanged."""
+    match = re.fullmatch(r"claude-([a-z]+)-(\d+)-(\d+)(-\d{8})?", model_id)
+    if not match:
+        return model_id
+    family, major, minor, _ = match.groups()
+    return f"{family.capitalize()} {major}.{minor}"
+
+
+
 def main():
     rows = load_rows()
-    prompt_names = list(dict.fromkeys(r["prompt_name"] for r in rows))
+    series = list(dict.fromkeys((r["model"], r["prompt_name"]) for r in rows))
     times = [datetime.fromisoformat(r["timestamp_utc"]) for r in rows]
     x_min = min(times) - TIME_PADDING
     x_max = max(max(times) + TIME_PADDING, x_min + MIN_TIME_SPAN)
     fig, axes = plt.subplots(len(METRICS), 1, figsize=(11, 8), sharex=True)
     axes[0].set_xlim(x_min, x_max)
     for ax, (key, label) in zip(axes, METRICS):
-        for prompt_name, (color, marker) in zip(prompt_names, PROMPT_STYLES):
-            prompt_rows = [r for r in rows if r["prompt_name"] == prompt_name]
-            ax.scatter([datetime.fromisoformat(r["timestamp_utc"]) for r in prompt_rows],
-                       [float(r[key]) for r in prompt_rows], s=MARKER_AREA, color=color, marker=marker,
-                       edgecolors="white", linewidths=1, zorder=3, label=f"prompt: {prompt_name}")
+        for (model_id, prompt_name), (color, marker) in zip(series, PROMPT_STYLES):
+            series_rows = [r for r in rows if (r["model"], r["prompt_name"]) == (model_id, prompt_name)]
+            ax.scatter([datetime.fromisoformat(r["timestamp_utc"]) for r in series_rows],
+                       [float(r[key]) for r in series_rows], s=MARKER_AREA, color=color, marker=marker,
+                       edgecolors="white", linewidths=1, zorder=3,
+                       label=f"{short_model_name(model_id)}, prompt: {prompt_name}")
         mark_us_office_hours(ax)
         ax.set_ylim(bottom=0, top=max(float(r[key]) for r in rows))
         ax.set_ylabel(label)
