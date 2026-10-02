@@ -1,4 +1,4 @@
-# claude_code_speedtest
+# llm_speedtest
 
 Measures the response speed of Claude Code: time to first token (TTFT) and output tokens per
 second. Each run sends two fixed prompts through `claude -p` and appends one CSV row per prompt.
