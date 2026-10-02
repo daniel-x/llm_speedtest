@@ -1,8 +1,10 @@
 # llm_speedtest
 
-Measures the response speed of Claude Code: time to first token (TTFT) and output tokens per
-second. Each run sends two fixed prompts through `claude -p` and appends one CSV row per prompt.
-A second script plots the results over time.
+Measures the response speed of LLMs: time to first token (TTFT) and output tok/s. Each run sends
+two fixed prompts (with a random prefixed for cache avoidance) to the model through `claude -p` and
+appends one CSV row per prompt. A second script plots the results over time.
+
+![TTFT and decode speed of Claude Opus 5.5 over time](llm_speedtest_plot.png)
 
 ## Requirements
 
