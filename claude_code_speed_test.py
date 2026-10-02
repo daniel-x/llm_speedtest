@@ -13,7 +13,6 @@ import json
 import random
 import subprocess
 from datetime import datetime, timezone
-from decimal import Decimal
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -73,13 +72,6 @@ def run_claude(prompt, model):
     return json.loads(proc.stdout)
 
 
-def format_decimal(value, min_digits=6):
-    """Formats a number in plain notation with all known fraction digits, at least min_digits."""
-    text = format(Decimal(repr(float(value))), "f")
-    integer_part, _, fraction = text.partition(".")
-    return f"{integer_part}.{fraction.ljust(min_digits, '0')}"
-
-
 def build_row(prompt_name, random_words, result):
     """Extracts the speed metrics from a Claude Code JSON result into a CSV row."""
     usage = result.get("usage", {})
@@ -104,7 +96,7 @@ def build_row(prompt_name, random_words, result):
         "decode_tok_s": f"{text_tokens / decode_s:.3f}" if decode_s > 0 else "",
         "end_to_end_tok_s": f"{output_tokens / duration_api_s:.3f}" if duration_api_s > 0 else "",
         "num_turns": result.get("num_turns", ""),
-        "cost_usd": format_decimal(result.get("total_cost_usd", 0)),
+        "cost_usd": f"{result.get('total_cost_usd', 0):.8f}",
         "is_error": result.get("is_error", ""),
         "random_words": random_words,
     }
