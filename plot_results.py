@@ -9,6 +9,7 @@ except for US office hours, which are white. This script takes US office hours a
 9:00 US Eastern time to 17:00 US Pacific time.
 """
 
+import argparse
 import csv
 import re
 from datetime import datetime, time, timedelta, timezone
@@ -43,10 +44,12 @@ METRICS = [
 ]
 
 
-def load_rows():
-    """Returns the CSV rows that have a value for every plotted metric."""
+def load_rows(model):
+    """Returns the CSV rows that have a value for every plotted metric, only those of the given
+    model ID if model is set."""
     with LOG_FILE.open(newline="", encoding="utf-8") as f:
-        return [r for r in csv.DictReader(f) if all(r[key] for key, _ in METRICS)]
+        return [r for r in csv.DictReader(f)
+                if all(r[key] for key, _ in METRICS) and (not model or r["model"] == model)]
 
 
 def us_office_spans(start, end):
@@ -100,7 +103,13 @@ def short_model_name(model_id):
 
 
 def main():
-    rows = load_rows()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model", help="plot only this model ID, e.g. claude-opus-5-5")
+    args = parser.parse_args()
+
+    rows = load_rows(args.model)
+    if not rows:
+        raise SystemExit(f"no measurements for model {args.model} in {LOG_FILE}")
     series = list(dict.fromkeys((r["model"], r["prompt_name"]) for r in rows))
     times = [datetime.fromisoformat(r["timestamp_utc"]) for r in rows]
     x_min = min(times) - TIME_PADDING
@@ -134,7 +143,6 @@ def main():
     for ax, (key, _) in zip(axes, METRICS):
         fit_ylim_below_legend(ax, max(float(r[key]) for r in rows))
     fig.savefig(PLOT_FILE, dpi=120)
-    print(f"wrote {PLOT_FILE}")
 
 
 if __name__ == "__main__":
