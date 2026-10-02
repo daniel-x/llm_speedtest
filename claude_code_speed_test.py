@@ -26,8 +26,8 @@ PROMPTS = {
         "during an eclipse. The story shall have around 1000 words."
     ),
     "quotes_guide": (
-        "Write a tutorial about how to quote correctly in scientific publications. The tutorial"
-        " shall have around 1000 words. Format it using latex syntax."
+        "Write a tutorial about how to quote correctly in scientific publications. The tutorial "
+        "shall have around 1000 words. Format it using latex syntax."
     ),
 }
 
