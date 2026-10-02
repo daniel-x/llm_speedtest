@@ -6,7 +6,7 @@ appends one CSV row per prompt. A second script plots the results over time.
 
 ## Example Plot
 
-![TTFT and decode speed of Claude Opus 5.5 over time](llm_speedtest_plot.png)
+[![TTFT and decode speed of Claude Opus 5.5 over time](llm_speedtest_plot.png)](llm_speedtest_plot.png?raw=true)
 
 ## Requirements
 
