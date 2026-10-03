@@ -39,8 +39,8 @@ pip install matplotlib
 ./plot_results.py
 ```
 
-This writes `llm_speedtest_plot.png` next to the script: TTFT in the upper diagram and decode
-speed in the lower one, one color and marker shape per prompt. A white background marks US office
+This writes `llm_speedtest_plot.png` next to the script, with three diagrams above each other:
+TTFT, decode speed and wall duration, one color and marker shape per model and prompt. A white background marks US office
 hours (Mon-Fri, 09:00 US Eastern time to 17:00 US Pacific time), and a grey background marks all
 other times.
 
@@ -54,6 +54,7 @@ other times.
 | `ttft_s` | time to first token in seconds |
 | `duration_s` | total duration in seconds |
 | `duration_api_s` | time spent in API calls in seconds |
+| `wall_duration_s` | wall-clock duration of the `claude` process in seconds, measured by the script; empty in rows from before this column existed |
 | `output_tokens` | all output tokens, including thinking tokens |
 | `thinking_tokens` | thinking tokens |
 | `text_tokens` | `output_tokens - thinking_tokens` |
