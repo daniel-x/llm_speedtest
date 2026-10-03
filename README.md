@@ -40,9 +40,10 @@ pip install matplotlib
 ```
 
 This writes `llm_speedtest_plot.png` next to the script, with three diagrams above each other:
-TTFT, decode speed and wall duration, one color and marker shape per model and prompt. A white background marks US office
-hours (Mon-Fri, 09:00 US Eastern time to 17:00 US Pacific time), and a grey background marks all
-other times.
+TTFT, decode speed and wall duration, one color and marker shape per model and prompt.
+`--no-wall-duration` leaves out the wall duration diagram, and `--model <model ID>` plots only one
+model. A white background marks US office hours (Mon-Fri, 09:00 US Eastern time to 17:00 US
+Pacific time), and a grey background marks all other times.
 
 ## CSV columns
 

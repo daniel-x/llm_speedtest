@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Plots TTFT and decode speed over time for each prompt from llm_speedtest_results.csv.
+"""Plots TTFT, decode speed and wall duration over time for each prompt from
+llm_speedtest_results.csv.
 
-Writes two scatter plots above each other to llm_speedtest_plot.png next to this script, one for
-TTFT and one for decode speed. Each prompt has its own color and marker shape. Both y-axes start
-at 0 and extend upward far enough that all markers stay below the legend in the top right. The
-time axis spans at least MIN_TIME_SPAN from the first measurement. The background is light grey,
-except for US office hours, which are white. This script takes US office hours as weekdays from
-9:00 US Eastern time to 17:00 US Pacific time.
+Writes scatter plots above each other to llm_speedtest_plot.png next to this script, one each for
+TTFT, decode speed and, unless --no-wall-duration is given, the wall-clock duration measured by
+llm_speedtest.py. Each prompt has its own color and marker shape. All y-axes start at 0 and extend
+upward far enough that all markers stay below the legend in the top right. The time axis spans at
+least MIN_TIME_SPAN from the first measurement. The background is light grey, except for US
+office hours, which are white. This script takes US office hours as weekdays from 9:00 US Eastern
+time to 17:00 US Pacific time.
 """
 
 import argparse
@@ -42,14 +44,18 @@ METRICS = [
     ("ttft_s", "TTFT [s]"),
     ("decode_tok_s", "speed [tok/s]"),
 ]
+WALL_DURATION_METRIC = ("wall_duration_s", "wall duration [s]")
 
 
 def load_rows(model):
-    """Returns the CSV rows that have a value for every plotted metric, only those of the given
-    model ID if model is set."""
+    """Returns the CSV rows, only those of the given model ID if model is set."""
     with LOG_FILE.open(newline="", encoding="utf-8") as f:
-        return [r for r in csv.DictReader(f)
-                if all(r[key] for key, _ in METRICS) and (not model or r["model"] == model)]
+        return [r for r in csv.DictReader(f) if not model or r["model"] == model]
+
+
+def metric_max(rows, key):
+    """Returns the largest value of the metric in the rows, or 1 if no row has a value for it."""
+    return max((float(r[key]) for r in rows if r[key]), default=1)
 
 
 def us_office_spans(start, end):
@@ -105,6 +111,8 @@ def short_model_name(model_id):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", help="plot only this model ID, e.g. claude-opus-5-5")
+    parser.add_argument("--wall-duration", action=argparse.BooleanOptionalAction, default=True,
+                        help="plot the wall duration measured by llm_speedtest.py (default: on)")
     args = parser.parse_args()
 
     rows = load_rows(args.model)
@@ -114,17 +122,19 @@ def main():
     times = [datetime.fromisoformat(r["timestamp_utc"]) for r in rows]
     x_min = min(times) - TIME_PADDING
     x_max = max(max(times) + TIME_PADDING, x_min + MIN_TIME_SPAN)
-    fig, axes = plt.subplots(len(METRICS), 1, figsize=(11, 8), sharex=True)
+    metrics = METRICS + ([WALL_DURATION_METRIC] if args.wall_duration else [])
+    fig, axes = plt.subplots(len(metrics), 1, figsize=(11, 4 * len(metrics)), sharex=True)
     axes[0].set_xlim(x_min, x_max)
-    for ax, (key, label) in zip(axes, METRICS):
+    for ax, (key, label) in zip(axes, metrics):
         for (model_id, prompt_name), (color, marker) in zip(series, PROMPT_STYLES):
-            series_rows = [r for r in rows if (r["model"], r["prompt_name"]) == (model_id, prompt_name)]
+            series_rows = [r for r in rows
+                           if (r["model"], r["prompt_name"]) == (model_id, prompt_name) and r[key]]
             ax.scatter([datetime.fromisoformat(r["timestamp_utc"]) for r in series_rows],
                        [float(r[key]) for r in series_rows], s=MARKER_AREA, color=color, marker=marker,
                        edgecolors="white", linewidths=1, zorder=3,
                        label=f"{short_model_name(model_id)}, prompt: {prompt_name}")
         mark_us_office_hours(ax)
-        ax.set_ylim(bottom=0, top=max(float(r[key]) for r in rows))
+        ax.set_ylim(bottom=0, top=metric_max(rows, key))
         ax.set_ylabel(label)
         ax.set_xlabel("time (UTC)")
         ax.tick_params(axis="x", labelbottom=True, rotation=30)
@@ -140,8 +150,8 @@ def main():
                   edgecolor="#c8c8c8")
     fig.tight_layout()
     fig.canvas.draw()
-    for ax, (key, _) in zip(axes, METRICS):
-        fit_ylim_below_legend(ax, max(float(r[key]) for r in rows))
+    for ax, (key, _) in zip(axes, metrics):
+        fit_ylim_below_legend(ax, metric_max(rows, key))
     fig.savefig(PLOT_FILE, dpi=120)
 
 
