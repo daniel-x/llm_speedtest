@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Plots TTFT, decode speed and wall duration over time for each prompt from
+"""Plots TTFT, decode speed and wall clock duration over time for each prompt from
 llm_speedtest_results.csv.
 
 Writes scatter plots above each other to llm_speedtest_plot.png next to this script, one each for
-TTFT, decode speed and, unless --no-wall-duration is given, the wall-clock duration measured by
-llm_speedtest.py. Each prompt has its own color and marker shape. All y-axes start at 0 and extend
-upward far enough that all markers stay below the legend in the top right. The time axis spans at
-least MIN_TIME_SPAN from the first measurement. The background is light grey, except for US
-office hours, which are white. This script takes US office hours as weekdays from 9:00 US Eastern
-time to 17:00 US Pacific time.
+TTFT, decode speed and, unless --no-wall-clock-duration is given, the wall clock duration
+measured by llm_speedtest.py. Each prompt has its own color and marker shape. All y-axes start at
+0 and extend upward far enough that all markers stay below the legend in the top right. The time
+axis spans at least MIN_TIME_SPAN from the first measurement. The background is light grey,
+except for US office hours, which are white. This script takes US office hours as weekdays from
+9:00 US Eastern time to 17:00 US Pacific time.
 """
 
 import argparse
@@ -44,7 +44,7 @@ METRICS = [
     ("ttft_s", "TTFT [s]"),
     ("decode_tok_s", "speed [tok/s]"),
 ]
-WALL_DURATION_METRIC = ("wall_duration_s", "wall duration [s]")
+WALL_CLOCK_DURATION_METRIC = ("wall_clock_duration_s", "wall clock duration [s]")
 
 
 def load_rows(model):
@@ -111,8 +111,10 @@ def short_model_name(model_id):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", help="plot only this model ID, e.g. claude-opus-5-5")
-    parser.add_argument("--wall-duration", action=argparse.BooleanOptionalAction, default=True,
-                        help="plot the wall duration measured by llm_speedtest.py (default: on)")
+    parser.add_argument("--wall-clock-duration", action=argparse.BooleanOptionalAction,
+                        default=True,
+                        help="plot the wall clock duration measured by llm_speedtest.py "
+                             "(default: on)")
     args = parser.parse_args()
 
     rows = load_rows(args.model)
@@ -122,7 +124,7 @@ def main():
     times = [datetime.fromisoformat(r["timestamp_utc"]) for r in rows]
     x_min = min(times) - TIME_PADDING
     x_max = max(max(times) + TIME_PADDING, x_min + MIN_TIME_SPAN)
-    metrics = METRICS + ([WALL_DURATION_METRIC] if args.wall_duration else [])
+    metrics = METRICS + ([WALL_CLOCK_DURATION_METRIC] if args.wall_clock_duration else [])
     fig, axes = plt.subplots(len(metrics), 1, figsize=(11, 4 * len(metrics)), sharex=True)
     axes[0].set_xlim(x_min, x_max)
     for ax, (key, label) in zip(axes, metrics):
