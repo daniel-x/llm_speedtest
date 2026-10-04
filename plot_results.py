@@ -38,7 +38,7 @@ MIN_TIME_SPAN = timedelta(days=3)
 TIME_PADDING = timedelta(minutes=30)
 MARKER_AREA = 50
 LEGEND_GAP_PT = 6
-PROMPT_STYLES = [("#2a78d6", "o"), ("#eb6834", "^"), ("#1baf7a", "s"), ("#8a5bd6", "D")]
+PROMPT_STYLES = [("#2a78d6", "o"), ("#eb6834", "P"), ("#1baf7a", "s"), ("#8a5bd6", "D")]
 
 METRICS = [
     ("ttft_s", "TTFT [s]"),
