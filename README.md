@@ -41,9 +41,11 @@ pip install matplotlib
 
 This writes `llm_speedtest_plot.png` next to the script, with three diagrams above each other:
 TTFT, decode speed and wall clock duration, one color and marker shape per model and prompt.
-`--no-wall-clock-duration` leaves out the wall clock duration diagram, and `--model <model ID>`
-plots only one model. A white background marks US office hours (Mon-Fri, 09:00 US Eastern time to
-17:00 US Pacific time), and a grey background marks all other times.
+`--no-wall-clock-duration` leaves out the wall clock duration diagram. `--model <pattern>` plots
+only the model IDs that match the pattern, which can contain wildcards like `*`. The default is
+`claude-opus-*`, and `--model all` plots all models. A white background marks US office hours
+(Mon-Fri, 09:00 US Eastern time to 17:00 US Pacific time), and a grey background marks all other
+times.
 
 ## CSV columns
 

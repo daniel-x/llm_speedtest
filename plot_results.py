@@ -13,6 +13,7 @@ except for US office hours, which are white. This script takes US office hours a
 
 import argparse
 import csv
+import fnmatch
 import re
 from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
@@ -47,10 +48,12 @@ METRICS = [
 WALL_CLOCK_DURATION_METRIC = ("wall_clock_duration_s", "wall clock duration [s]")
 
 
-def load_rows(model):
-    """Returns the CSV rows, only those of the given model ID if model is set."""
+def load_rows(model_pattern):
+    """Returns the CSV rows whose model ID matches the shell-style wildcard pattern, or all rows if
+    the pattern is "all"."""
     with LOG_FILE.open(newline="", encoding="utf-8") as f:
-        return [r for r in csv.DictReader(f) if not model or r["model"] == model]
+        return [r for r in csv.DictReader(f)
+                if model_pattern == "all" or fnmatch.fnmatchcase(r["model"], model_pattern)]
 
 
 def metric_max(rows, key):
@@ -110,7 +113,10 @@ def short_model_name(model_id):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", help="plot only this model ID, e.g. claude-opus-5-5")
+    parser.add_argument("--model", default="claude-opus-*",
+                        help="plot only model IDs matching this pattern, wildcards allowed, e.g. "
+                             "claude-opus-5-5 or claude-sonnet-*; \"all\" plots all models "
+                             "(default: %(default)s)")
     parser.add_argument("--wall-clock-duration", action=argparse.BooleanOptionalAction,
                         default=True,
                         help="plot the wall clock duration measured by llm_speedtest.py "
