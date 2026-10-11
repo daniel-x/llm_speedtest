@@ -6,7 +6,7 @@ appends one CSV row per prompt. A second script plots the results over time.
 
 ## Example Plot
 
-[![TTFT and decode speed of Claude Opus 5.5 over time](llm_speedtest_plot.png)](../../raw/main/llm_speedtest_plot.png)
+[![TTFT and speeds of Claude Opus 5.5 over time](llm_speedtest_plot.png)](../../raw/main/llm_speedtest_plot.png)
 
 ## Requirements
 
@@ -40,12 +40,19 @@ pip install matplotlib
 ```
 
 This writes `llm_speedtest_plot.png` next to the script, with three diagrams above each other:
-TTFT, decode speed and wall clock duration, one color and marker shape per model and prompt.
-`--no-wall-clock-duration` leaves out the wall clock duration diagram. `--model <pattern>` plots
-only the model IDs that match the pattern, which can contain wildcards like `*`. The default is
-`claude-opus-*`, and `--model all` plots all models. A white background marks US office hours
-(Mon-Fri, 09:00 US Eastern time to 17:00 US Pacific time), and a grey background marks all other
-times.
+TTFT and output rate as measured by Claude Code, and output rate as measured by
+`llm_speedtest.py`, one color and marker shape per model and prompt. The script computes the
+output rates in tokens per second from the CSV columns:
+
+| Output rate | Formula |
+| ----------- | ------- |
+| `claude_code_api_tok_s` | `output_token_count / claude_code_api_duration_s` |
+| `llm_speedtest_tok_s` | `output_token_count / llm_speedtest_duration_s` |
+
+`--model <pattern>` plots only the model IDs that match the pattern, which can contain wildcards
+like `*`. The default is `claude-opus-*`, and `--model all` plots all models. A white background
+marks US office hours (Mon-Fri, 09:00 US Eastern time to 17:00 US Pacific time), and a grey
+background marks all other times.
 
 ## CSV columns
 
@@ -54,15 +61,13 @@ times.
 | `timestamp_utc` | time the measurement ended, UTC |
 | `model` | model(s) reported by Claude Code, separated by `;` |
 | `prompt_name` | name of the prompt |
-| `ttft_s` | time to first token in seconds |
-| `duration_s` | total duration in seconds |
-| `duration_api_s` | time spent in API calls in seconds |
-| `wall_clock_duration_s` | wall clock duration of the `claude` process in seconds, measured by the script; empty in rows from before this column existed |
-| `output_tokens` | all output tokens, including thinking tokens |
-| `thinking_tokens` | thinking tokens |
-| `text_tokens` | `output_tokens - thinking_tokens` |
-| `decode_tok_s` | `text_tokens / (duration_s - ttft_s)` |
-| `end_to_end_tok_s` | `output_tokens / duration_api_s` |
+| `claude_code_ttft_s` | time to first token in seconds, measured by Claude Code |
+| `claude_code_duration_s` | total duration in seconds, measured by Claude Code |
+| `claude_code_api_duration_s` | time spent in API calls in seconds, measured by Claude Code |
+| `llm_speedtest_duration_s` | duration of the `claude` process in seconds, measured by `llm_speedtest.py`; empty in rows from before this column existed |
+| `output_token_count` | all output tokens, including thinking tokens |
+| `thinking_token_count` | thinking tokens |
+| `text_token_count` | `output_token_count - thinking_token_count` |
 | `num_turns` | number of agent turns |
 | `cost_usd` | cost in US dollars as reported by Claude Code |
 | `is_error` | error flag as reported by Claude Code |

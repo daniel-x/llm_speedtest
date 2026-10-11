@@ -36,15 +36,13 @@ CSV_FIELDS = [
     "timestamp_utc",
     "model",
     "prompt_name",
-    "ttft_s",
-    "duration_s",
-    "duration_api_s",
-    "wall_clock_duration_s",
-    "output_tokens",
-    "thinking_tokens",
-    "text_tokens",
-    "decode_tok_s",
-    "end_to_end_tok_s",
+    "claude_code_ttft_s",
+    "claude_code_duration_s",
+    "claude_code_api_duration_s",
+    "llm_speedtest_duration_s",
+    "output_token_count",
+    "thinking_token_count",
+    "text_token_count",
     "num_turns",
     "cost_usd",
     "is_error",
@@ -65,42 +63,39 @@ def add_cache_buster(prompt):
 
 def run_claude(prompt, model):
     """Runs the prompt through Claude Code in headless mode and returns the parsed JSON result and
-    the wall clock duration of the claude process in seconds, measured by this script."""
+    the duration of the claude process in seconds, measured by this script."""
     cmd = ["claude", "-p", prompt, "--output-format", "json"]
     if model:
         cmd += ["--model", model]
     start = time.perf_counter()
     proc = subprocess.run(cmd, capture_output=True, text=True)
-    wall_clock_duration_s = time.perf_counter() - start
+    llm_speedtest_duration_s = time.perf_counter() - start
     if not proc.stdout.strip():
         raise SystemExit(f"claude produced no output (exit {proc.returncode}): {proc.stderr}")
-    return json.loads(proc.stdout), wall_clock_duration_s
+    return json.loads(proc.stdout), llm_speedtest_duration_s
 
 
-def build_row(prompt_name, random_words, result, wall_clock_duration_s):
+def build_row(prompt_name, random_words, result, llm_speedtest_duration_s):
     """Extracts the speed metrics from a Claude Code JSON result into a CSV row."""
     usage = result.get("usage", {})
-    output_tokens = usage.get("output_tokens", 0)
-    thinking_tokens = usage.get("output_tokens_details", {}).get("thinking_tokens", 0)
-    text_tokens = output_tokens - thinking_tokens
-    ttft_s = result.get("ttft_ms", 0) / 1000
-    duration_s = result.get("duration_ms", 0) / 1000
-    duration_api_s = result.get("duration_api_ms", 0) / 1000
-    decode_s = (result.get("duration_ms", 0) - result.get("ttft_ms", 0)) / 1000
+    output_token_count = usage.get("output_tokens", 0)
+    thinking_token_count = usage.get("output_tokens_details", {}).get("thinking_tokens", 0)
+    text_token_count = output_token_count - thinking_token_count
+    claude_code_ttft_s = result.get("ttft_ms", 0) / 1000
+    claude_code_duration_s = result.get("duration_ms", 0) / 1000
+    claude_code_api_duration_s = result.get("duration_api_ms", 0) / 1000
     models = list(result.get("modelUsage", {}).keys())
     return {
         "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
         "model": ";".join(models),
         "prompt_name": prompt_name,
-        "ttft_s": f"{ttft_s:.3f}",
-        "duration_s": f"{duration_s:.3f}",
-        "duration_api_s": f"{duration_api_s:.3f}",
-        "wall_clock_duration_s": f"{wall_clock_duration_s:.3f}",
-        "output_tokens": output_tokens,
-        "thinking_tokens": thinking_tokens,
-        "text_tokens": text_tokens,
-        "decode_tok_s": f"{text_tokens / decode_s:.3f}" if decode_s > 0 else "",
-        "end_to_end_tok_s": f"{output_tokens / duration_api_s:.3f}" if duration_api_s > 0 else "",
+        "claude_code_ttft_s": f"{claude_code_ttft_s:.3f}",
+        "claude_code_duration_s": f"{claude_code_duration_s:.3f}",
+        "claude_code_api_duration_s": f"{claude_code_api_duration_s:.3f}",
+        "llm_speedtest_duration_s": f"{llm_speedtest_duration_s:.3f}",
+        "output_token_count": output_token_count,
+        "thinking_token_count": thinking_token_count,
+        "text_token_count": text_token_count,
         "num_turns": result.get("num_turns", ""),
         "cost_usd": f"{result.get('total_cost_usd', 0):.8f}",
         "is_error": result.get("is_error", ""),
@@ -126,12 +121,14 @@ def main():
     for prompt_name, prompt in PROMPTS.items():
         random_words, full_prompt = add_cache_buster(prompt)
         print(f"=== {prompt_name} prompt ===\n{full_prompt}\n", flush=True)
-        result, wall_clock_duration_s = run_claude(full_prompt, args.model)
+        result, llm_speedtest_duration_s = run_claude(full_prompt, args.model)
         print(f"=== {prompt_name} response ===\n{result.get('result', '')}\n")
-        row = build_row(prompt_name, random_words, result, wall_clock_duration_s)
+        row = build_row(prompt_name, random_words, result, llm_speedtest_duration_s)
         append_log(row)
-        print(f"{prompt_name}: {row['output_tokens']} tokens ({row['thinking_tokens']} thinking), "
-              f"TTFT {row['ttft_s']} s, decode {row['decode_tok_s']} tok/s")
+        print(f"{prompt_name}: {row['output_token_count']} tokens "
+              f"({row['thinking_token_count']} thinking), "
+              f"TTFT {row['claude_code_ttft_s']} s (Claude Code), "
+              f"duration {row['llm_speedtest_duration_s']} s (llm_speedtest)")
 
 
 if __name__ == "__main__":
