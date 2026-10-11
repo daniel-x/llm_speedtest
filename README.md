@@ -6,7 +6,7 @@ appends one CSV row per prompt. A second script plots the results over time.
 
 ## Example Plot
 
-[![TTFT and speeds of Claude Opus 5.5 over time](llm_speedtest_plot.png)](../../raw/main/llm_speedtest_plot.png)
+[![TTFT, output rates and duration of Claude Opus 5.5 over time](llm_speedtest_plot.webp)](../../raw/main/llm_speedtest_plot.webp)
 
 ## Requirements
 
@@ -39,7 +39,7 @@ pip install matplotlib
 ./plot_results.py
 ```
 
-This writes `llm_speedtest_plot.png` next to the script, with four diagrams above each other:
+This writes `llm_speedtest_plot.webp` next to the script, with four diagrams above each other:
 TTFT as reported by Claude Code, output rate timed by Claude Code, output rate timed by
 `llm_speedtest.py`, and `llm_speedtest_duration_s`, one color and marker shape per model and
 prompt. Both output rates use the

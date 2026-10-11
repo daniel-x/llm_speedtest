@@ -2,7 +2,7 @@
 """Plots TTFT, output rates and duration over time for each prompt from llm_speedtest_results.csv.
 
 Computes the output rates from the CSV columns, see add_output_rates. Writes scatter plots above
-each other to llm_speedtest_plot.png next to this script, one each for TTFT reported by Claude
+each other to llm_speedtest_plot.webp next to this script, one each for TTFT reported by Claude
 Code, output rate timed by Claude Code, output rate timed by llm_speedtest.py and duration timed by
 llm_speedtest.py. Each prompt has its own color and marker shape. All y-axes are logarithmic, start
 at the power of 10 at or below the smallest value and extend upward far enough that all markers
@@ -30,7 +30,7 @@ from matplotlib.patches import Patch
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_FILE = BASE_DIR / "llm_speedtest_results.csv"
-PLOT_FILE = BASE_DIR / "llm_speedtest_plot.png"
+PLOT_FILE = BASE_DIR / "llm_speedtest_plot.webp"
 OFFICE_START = (ZoneInfo("America/New_York"), time(9), "US/NY")
 OFFICE_END = (ZoneInfo("America/Los_Angeles"), time(17), "US/LA")
 BACKGROUND_COLOR = "#f3f3f3"
@@ -222,7 +222,7 @@ def main():
         for ax, (key, _) in zip(axes, METRICS):
             fit_ylim_below_legend(ax, metric_range(rows, key)[1])
             set_log_y_ticks(ax)
-    fig.savefig(PLOT_FILE, dpi=120)
+    fig.savefig(PLOT_FILE, dpi=120, pil_kwargs={"lossless": True, "quality": 100, "method": 6})
 
 
 if __name__ == "__main__":
