@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Plots TTFT and output rates over time for each prompt from llm_speedtest_results.csv.
+"""Plots TTFT, output rates and duration over time for each prompt from llm_speedtest_results.csv.
 
 Computes the output rates from the CSV columns, see add_output_rates. Writes scatter plots above
-each other to llm_speedtest_plot.png next to this script, one each for TTFT and output rate
-measured by Claude Code and output rate measured by llm_speedtest.py. Each prompt has its own color
-and marker shape. All y-axes are logarithmic, start at the power of 10 at or below the smallest
-value and extend upward far enough that all markers stay below the legend in the top right. The
-time axis spans at least MIN_TIME_SPAN from the first measurement. The background is light grey,
-except for US office hours, which are white. This script takes US office hours as weekdays from
-9:00 US Eastern time to 17:00 US Pacific time.
+each other to llm_speedtest_plot.png next to this script, one each for TTFT reported by Claude
+Code, output rate timed by Claude Code, output rate timed by llm_speedtest.py and duration timed by
+llm_speedtest.py. Each prompt has its own color and marker shape. All y-axes are logarithmic, start
+at the power of 10 at or below the smallest value and extend upward far enough that all markers
+stay below the legend in the top right. The time axis spans at least MIN_TIME_SPAN from the first
+measurement. The background is light grey, except for US office hours, which are white. This script
+takes US office hours as weekdays from 9:00 US Eastern time to 17:00 US Pacific time.
 """
 
 import argparse
@@ -50,6 +50,8 @@ METRICS = [
     ("claude_code_api_tok_s", "output rate, timed by Claude Code [tok/s]"),
     ("llm_speedtest_tok_s",
      "output rate, timed by llm_speedtest [tok/s]\n(outside process that starts Claude Code)"),
+    ("llm_speedtest_duration_s",
+     "duration, timed by llm_speedtest [s]\n(outside process that starts Claude Code)"),
 ]
 
 

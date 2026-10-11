@@ -39,9 +39,10 @@ pip install matplotlib
 ./plot_results.py
 ```
 
-This writes `llm_speedtest_plot.png` next to the script, with three diagrams above each other:
-TTFT as reported by Claude Code, output rate timed by Claude Code, and output rate timed by
-`llm_speedtest.py`, one color and marker shape per model and prompt. Both output rates use the
+This writes `llm_speedtest_plot.png` next to the script, with four diagrams above each other:
+TTFT as reported by Claude Code, output rate timed by Claude Code, output rate timed by
+`llm_speedtest.py`, and `llm_speedtest_duration_s`, one color and marker shape per model and
+prompt. Both output rates use the
 token count reported by Claude Code. The script computes them in tokens per second from the CSV
 columns:
 
