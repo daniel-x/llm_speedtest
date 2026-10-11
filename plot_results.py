@@ -47,9 +47,9 @@ PROMPT_STYLES = [("#2a78d6", "o"), ("#eb6834", "P"), ("#1baf7a", "s"), ("#8a5bd6
 
 METRICS = [
     ("claude_code_ttft_s", "TTFT, reported by Claude Code [s]"),
-    ("claude_code_api_tok_s", "output rate, reported by Claude Code [tok/s]"),
+    ("claude_code_api_tok_s", "output rate, timed by Claude Code [tok/s]"),
     ("llm_speedtest_tok_s",
-     "output rate, reported by llm_speedtest [tok/s]\n(outside process that starts Claude Code)"),
+     "output rate, timed by llm_speedtest [tok/s]\n(outside process that starts Claude Code)"),
 ]
 
 
