@@ -3,8 +3,8 @@
 
 Each run executes all prompts in PROMPTS one after another; --repeats runs them several times.
 Each prompt gets a prepended line with 4 random common English words so that no two runs send the
-same prompt. The prompt runs through `claude -p --output-format json`, and the timing results are
-appended to llm_speedtest_results.csv. All files live next to this script.
+same prompt. The prompt runs through `claude -p --output-format json`, and the measurements are
+appended to llm_speedtest_measurements.csv. All files live next to this script.
 """
 
 import argparse
@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-LOG_FILE = BASE_DIR / "llm_speedtest_results.csv"
+LOG_FILE = BASE_DIR / "llm_speedtest_measurements.csv"
 WORDS_FILE = BASE_DIR / "common_words.txt"
 RANDOM_WORD_COUNT = 4
 
@@ -63,7 +63,8 @@ def add_cache_buster(prompt):
 
 def run_claude(prompt, model):
     """Runs the prompt through Claude Code in headless mode and returns the parsed JSON result and
-    the duration of the claude process in seconds, measured by this script."""
+    the duration of the claude process in seconds, measured by this script. Exits the script if
+    claude fails, so that no measurement of a failed run gets logged."""
     cmd = ["claude", "-p", prompt, "--output-format", "json"]
     if model:
         cmd += ["--model", model]
@@ -72,7 +73,10 @@ def run_claude(prompt, model):
     llm_speedtest_duration_s = time.perf_counter() - start
     if not proc.stdout.strip():
         raise SystemExit(f"claude produced no output (exit {proc.returncode}): {proc.stderr}")
-    return json.loads(proc.stdout), llm_speedtest_duration_s
+    result = json.loads(proc.stdout)
+    if proc.returncode != 0 or result.get("is_error"):
+        raise SystemExit(f"claude failed (exit {proc.returncode}): {result.get('result', '')}")
+    return result, llm_speedtest_duration_s
 
 
 def build_row(prompt_name, random_words, result, llm_speedtest_duration_s):

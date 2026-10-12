@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Plots TTFT, output rates and duration over time for each prompt from llm_speedtest_results.csv.
+"""Plots TTFT, output rates and duration over time for each prompt from
+llm_speedtest_measurements.csv.
 
 Computes the output rates from the CSV columns, see add_output_rates. Writes scatter plots above
 each other to llm_speedtest_plot.webp next to this script, one each for TTFT reported by Claude
@@ -29,7 +30,7 @@ import matplotlib.ticker as mticker
 from matplotlib.patches import Patch
 
 BASE_DIR = Path(__file__).resolve().parent
-LOG_FILE = BASE_DIR / "llm_speedtest_results.csv"
+LOG_FILE = BASE_DIR / "llm_speedtest_measurements.csv"
 PLOT_FILE = BASE_DIR / "llm_speedtest_plot.webp"
 OFFICE_START = (ZoneInfo("America/New_York"), time(9), "US/NY")
 OFFICE_END = (ZoneInfo("America/Los_Angeles"), time(17), "US/LA")
