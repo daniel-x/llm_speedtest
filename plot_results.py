@@ -222,7 +222,7 @@ def main():
         for ax, (key, _) in zip(axes, METRICS):
             fit_ylim_below_legend(ax, metric_range(rows, key)[1])
             set_log_y_ticks(ax)
-    fig.savefig(PLOT_FILE, dpi=120, pil_kwargs={"lossless": True, "quality": 100, "method": 6})
+    fig.savefig(PLOT_FILE, dpi=120, pil_kwargs={"lossless": True, "quality": 100})
 
 
 if __name__ == "__main__":
