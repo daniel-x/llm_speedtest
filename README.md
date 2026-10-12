@@ -13,9 +13,9 @@ appends one CSV row per prompt. A second script plots the results over time.
 - Python 3.9 or newer
 - [Claude Code](https://claude.com/claude-code), with the `claude` command on the `PATH` and
   logged in
-- [matplotlib](https://matplotlib.org/) before 3.11, only for the plot script. Matplotlib 3.11
-  renders text differently, which makes the lossless WebP plot about 2.5 times larger with no
-  visible difference.
+- [matplotlib](https://matplotlib.org/) before 3.11, only for the plot script. Starting with
+  version 3.11, matplotlib renders text differently, which makes the lossless WebP plot about 2.5
+  times larger with no visible difference.
 
 ## Usage
 
