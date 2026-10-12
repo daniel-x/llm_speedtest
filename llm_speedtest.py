@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Measures Claude Code token speed for a fixed set of prompts.
 
-Each run executes all prompts in PROMPTS one after another. Each prompt gets a prepended line with
-4 random common English words so that no two runs send the same prompt. The prompt runs through
-`claude -p --output-format json`, and the timing results are appended to
-llm_speedtest_results.csv. All files live next to this script.
+Each run executes all prompts in PROMPTS one after another; --repeats runs them several times.
+Each prompt gets a prepended line with 4 random common English words so that no two runs send the
+same prompt. The prompt runs through `claude -p --output-format json`, and the timing results are
+appended to llm_speedtest_results.csv. All files live next to this script.
 """
 
 import argparse
@@ -113,15 +113,21 @@ def append_log(row):
         writer.writerow(row)
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", help="model passed to claude --model, e.g. claude-sonnet-5-5")
-    args = parser.parse_args()
+def positive_int(text):
+    """Parses a command line value as an integer of at least 1."""
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"must be at least 1, got {value}")
+    return value
 
+
+def measure_prompts(model):
+    """Runs every prompt in PROMPTS once, prints prompt, response and summary, and logs each
+    measurement to the CSV file."""
     for prompt_name, prompt in PROMPTS.items():
         random_words, full_prompt = add_cache_buster(prompt)
         print(f"=== {prompt_name} prompt ===\n{full_prompt}\n", flush=True)
-        result, llm_speedtest_duration_s = run_claude(full_prompt, args.model)
+        result, llm_speedtest_duration_s = run_claude(full_prompt, model)
         print(f"=== {prompt_name} response ===\n{result.get('result', '')}\n")
         row = build_row(prompt_name, random_words, result, llm_speedtest_duration_s)
         append_log(row)
@@ -129,6 +135,18 @@ def main():
               f"({row['thinking_token_count']} thinking), "
               f"TTFT {row['claude_code_ttft_s']} s (Claude Code), "
               f"duration {row['llm_speedtest_duration_s']} s (llm_speedtest)")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model", help="model passed to claude --model, e.g. claude-sonnet-5-5")
+    parser.add_argument("-r", "--repeats", type=positive_int, default=1,
+                        help="number of times to run all prompts (default: %(default)s)")
+    args = parser.parse_args()
+
+    for repeat in range(1, args.repeats + 1):
+        print(f"##### repeat {repeat} of {args.repeats} #####\n", flush=True)
+        measure_prompts(args.model)
 
 
 if __name__ == "__main__":

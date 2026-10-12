@@ -22,12 +22,13 @@ Run a measurement:
 ```sh
 ./llm_speedtest.py
 ./llm_speedtest.py --model claude-sonnet-5-5
+./llm_speedtest.py --repeats 5
 ```
 
 The script runs the prompts `brinks_story` (a story of about 1000 words) and `quotes_guide` (a
 tutorial of about 1000 words in LaTeX syntax) one after the other. It prints each prompt, each
 response and a short speed summary, and appends the measurements to `llm_speedtest_results.csv`
-next to the script.
+next to the script. `--repeats <n>` (or `-r <n>`) repeats this n times.
 
 Each prompt gets a prepended line with 4 words picked at random from `common_words.txt`, so that
 no two runs send the same prompt and no response comes from a cache.
