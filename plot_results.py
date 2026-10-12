@@ -206,8 +206,8 @@ def main():
         ax.set_ylim(top=data_max)
         ax.set_ylabel(label)
         ax.set_xlabel("time (UTC)")
-        ax.tick_params(axis="x", labelbottom=True, rotation=30)
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M"))
+        ax.tick_params(axis="x", labelbottom=True)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d\n%H:%M"))
         ax.grid(which="major", color="#e5e5e5", linewidth=0.8)
         ax.set_axisbelow(True)
         for side in ("top", "right"):
